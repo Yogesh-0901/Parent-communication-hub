@@ -1,0 +1,276 @@
+/* Anti-Gravity Animation System */
+
+/* Base floating animation */
+@keyframes float-vertical {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes float-horizontal {
+  0%, 100% { transform: translateX(0px); }
+  50% { transform: translateX(15px); }
+}
+
+@keyframes float-diagonal {
+  0%, 100% { transform: translate(0px, 0px); }
+  25% { transform: translate(10px, -15px); }
+  50% { transform: translate(-5px, -25px); }
+  75% { transform: translate(-15px, -10px); }
+}
+
+@keyframes gentle-rotate {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3),
+                0 0 40px rgba(99, 102, 241, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.5),
+                0 0 60px rgba(99, 102, 241, 0.2);
+  }
+}
+
+@keyframes magnetic-pull {
+  0% { transform: scale(1) translateY(0px); }
+  100% { transform: scale(1.05) translateY(-5px); }
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) translateX(0px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes light-trail {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+    opacity: 0;
+  }
+}
+
+@keyframes parallax-drift {
+  0%, 100% { transform: translateX(0px) translateY(0px); }
+  33% { transform: translateX(30px) translateY(-20px); }
+  66% { transform: translateX(-20px) translateY(15px); }
+}
+
+/* Anti-gravity element classes */
+.anti-gravity-element {
+  animation: float-vertical 6s ease-in-out infinite,
+             float-horizontal 8s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.anti-gravity-element-slow {
+  animation: float-diagonal 12s ease-in-out infinite,
+             gentle-rotate 20s ease-in-out infinite;
+}
+
+.anti-gravity-element-fast {
+  animation: float-vertical 3s ease-in-out infinite,
+             float-horizontal 4s ease-in-out infinite;
+}
+
+/* Hover effects */
+.anti-gravity-hover:hover {
+  animation: magnetic-pull 0.6s ease-out forwards,
+             pulse-glow 1.5s ease-in-out infinite;
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4),
+              0 20px 60px rgba(99, 102, 241, 0.2);
+  z-index: 50;
+}
+
+/* Magnetic cursor following */
+.magnetic-element {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Particle container */
+.particle-field {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(45deg, #6366f1, #a855f7);
+  border-radius: 50%;
+  animation: particle-float var(--duration, 15s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0.6;
+}
+
+.light-trail {
+  position: absolute;
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #6366f1, transparent);
+  animation: light-trail var(--duration, 8s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0.3;
+}
+
+/* Parallax layers */
+.parallax-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.parallax-bg {
+  animation: parallax-drift 25s ease-in-out infinite;
+  z-index: 1;
+}
+
+.parallax-mid {
+  animation: parallax-drift 18s ease-in-out infinite reverse;
+  z-index: 2;
+}
+
+.parallax-fg {
+  animation: parallax-drift 12s ease-in-out infinite;
+  z-index: 3;
+}
+
+/* Page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: scale(1) translateY(0px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: scale(1) translateY(0px);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: scale(0.95) translateY(-20px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fluid component transitions */
+.component-glide-in {
+  animation: glide-in 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes glide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0px) scale(1);
+  }
+}
+
+.component-fade-in {
+  animation: fade-in 1.2s ease-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+/* Zero-gravity container */
+.zero-gravity-container {
+  position: relative;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* Glow effects */
+.zero-gravity-glow {
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.3),
+              0 0 60px rgba(99, 102, 241, 0.1),
+              inset 0 0 20px rgba(99, 102, 241, 0.05);
+  transition: box-shadow 0.4s ease;
+}
+
+.zero-gravity-glow:hover {
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.5),
+              0 0 80px rgba(99, 102, 241, 0.2),
+              inset 0 0 30px rgba(99, 102, 241, 0.1);
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.smooth-animation {
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive animation speeds */
+@media (prefers-reduced-motion: reduce) {
+  .anti-gravity-element,
+  .anti-gravity-element-slow,
+  .anti-gravity-element-fast,
+  .particle,
+  .light-trail,
+  .parallax-layer {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .anti-gravity-element {
+    animation-duration: 8s, 10s;
+  }
+  
+  .particle {
+    width: 2px;
+    height: 2px;
+  }
+}
