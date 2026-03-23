@@ -145,76 +145,7 @@ export const AdminDashboard: React.FC<{ activeTab?: string }> = ({ activeTab = '
     }
   };
 
-  const handleSendEmail = async (email: string) => {
-    if (!email) {
-      alert('No email address available for this parent');
-      return;
-    }
-    
-    try {
-      const response = await axios.post('/api/messaging/send-email', {
-        recipients: [email],
-        subject: 'Important Notification from Parent Communication Hub',
-        message: 'This is an important message regarding your child\'s progress. Please check the portal for more details.',
-        sendToAll: false
-      });
-      
-      if (response.data.success) {
-        alert('Email sent successfully!');
-      } else {
-        alert('Failed to send email: ' + response.data.error);
-      }
-    } catch (err) {
-      alert('Error sending email');
-    }
-  };
 
-  const sendEmail = async () => {
-    if (!emailForm.to || !emailForm.subject || !emailForm.message) {
-      alert('Please fill in all email fields');
-      return;
-    }
-    
-    try {
-      const response = await axios.post("http://localhost:3001/api/email", {
-        to: emailForm.to,
-        subject: emailForm.subject,
-        message: emailForm.message
-      });
-      
-      if (response.data.success) {
-        alert("Email sent successfully!");
-        setEmailForm({ to: '', subject: '', message: '' });
-      } else {
-        alert("Failed to send email");
-      }
-    } catch (error) {
-      alert("Error sending email");
-    }
-  };
-
-  const handleSendSMS = async (phone: string) => {
-    if (!phone) {
-      alert('No phone number available for this parent');
-      return;
-    }
-    
-    try {
-      const response = await axios.post('/api/messaging/send-sms', {
-        recipients: [phone],
-        message: 'Important notification from Parent Communication Hub. Please check the portal for updates.',
-        sendToAll: false
-      });
-      
-      if (response.data.success) {
-        alert('SMS sent successfully!');
-      } else {
-        alert('Failed to send SMS: ' + response.data.error);
-      }
-    } catch (err) {
-      alert('Error sending SMS');
-    }
-  };
 
   const filteredStudents = students.filter(s => 
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -254,51 +185,7 @@ export const AdminDashboard: React.FC<{ activeTab?: string }> = ({ activeTab = '
             <StatCard icon={<Award className="text-white" size={32} />} label="Top Performers" value="12" gradient="from-amber-400 via-yellow-500 to-orange-500" shadow="shadow-amber-500/40" delay={0.4} />
           </div>
 
-          {/* Email Messaging Section */}
-          <div className="bg-white/5 backdrop-blur-2xl p-8 rounded-[2rem] shadow-[0_15px_30px_rgba(0,0,0,0.2)] border border-white/10 mb-8">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-              <Mail className="text-indigo-400" size={28} />
-              Send Email to Parents
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-indigo-300 mb-2">Parent Email</label>
-                <input
-                  type="email"
-                  value={emailForm.to}
-                  onChange={(e) => setEmailForm({...emailForm, to: e.target.value})}
-                  className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="parent@example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-indigo-300 mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={emailForm.subject}
-                  onChange={(e) => setEmailForm({...emailForm, subject: e.target.value})}
-                  className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Message from Admin"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-indigo-300 mb-2">Message</label>
-                <textarea
-                  value={emailForm.message}
-                  onChange={(e) => setEmailForm({...emailForm, message: e.target.value})}
-                  className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent h-24 resize-none"
-                  placeholder="Your child attendance is low..."
-                />
-              </div>
-            </div>
-            <button
-              onClick={sendEmail}
-              className="mt-4 flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg"
-            >
-              <Send size={18} />
-              Send Email
-            </button>
-          </div>
+
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Charts & Insights */}
@@ -407,8 +294,6 @@ export const AdminDashboard: React.FC<{ activeTab?: string }> = ({ activeTab = '
                         <div className="flex gap-2">
                           <button onClick={() => setViewStudent(student)} className="p-2 text-white/40 hover:text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all border border-transparent hover:border-blue-500/30 shadow-inner opacity-60 group-hover:opacity-100"><Eye size={16} /></button>
                           <button onClick={() => setEditStudent(student)} className="p-2 text-white/40 hover:text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-all border border-transparent hover:border-indigo-500/30 shadow-inner opacity-60 group-hover:opacity-100"><Edit2 size={16} /></button>
-                          <button onClick={() => handleSendEmail(student.parentEmail)} className="p-2 text-white/40 hover:text-green-400 hover:bg-green-500/20 rounded-lg transition-all border border-transparent hover:border-green-500/30 shadow-inner opacity-60 group-hover:opacity-100" title="Send Email">📧</button>
-                          <button onClick={() => handleSendSMS(student.parentPhone)} className="p-2 text-white/40 hover:text-purple-400 hover:bg-purple-500/20 rounded-lg transition-all border border-transparent hover:border-purple-500/30 shadow-inner opacity-60 group-hover:opacity-100" title="Send SMS">📱</button>
                           <button onClick={() => handleDelete(student._id)} className="p-2 text-white/40 hover:text-rose-400 hover:bg-rose-500/20 rounded-lg transition-all border border-transparent hover:border-rose-500/30 shadow-inner opacity-60 group-hover:opacity-100"><Trash2 size={16} /></button>
                         </div>
                       </td>

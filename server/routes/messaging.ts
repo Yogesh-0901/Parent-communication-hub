@@ -2,6 +2,7 @@ import express from 'express';
 import db from '../db.ts';
 import nodemailer from 'nodemailer';
 import multer from 'multer';
+import axios from 'axios';
 
 // Extend Request interface to include file
 interface MulterRequest extends express.Request {
@@ -124,75 +125,61 @@ router.post('/send-email', upload.single('attachment'), async (req: MulterReques
   }
 });
 
-// Send SMS to parents (using Twilio or similar service)
+// Send message to Slack (Replaced Twilio SMS)
 router.post('/send-sms', async (req, res) => {
   try {
     const { recipients, message, sendToAll } = req.body;
 
-    let parentPhones: string[] = [];
+    let targetNames: string[] = [];
 
     if (sendToAll === 'true') {
-      // Get all parent phone numbers
+      // Get all parent names
       const allParents = db.prepare(`
-        SELECT DISTINCT u.email, s.parentPhone
+        SELECT DISTINCT u.name
         FROM users u
-        LEFT JOIN students s ON u.linkedStudentId = s.id
-        WHERE u.role = 'parent' AND s.parentPhone IS NOT NULL
+        WHERE u.role = 'parent'
       `).all() as any[];
       
-      parentPhones = allParents.map(p => p.parentPhone).filter(Boolean);
+      targetNames = allParents.map(p => p.name).filter(Boolean);
     } else {
       // Use specific recipients
-      parentPhones = Array.isArray(recipients) ? recipients : [recipients];
+      targetNames = Array.isArray(recipients) ? recipients : [recipients];
     }
 
-    if (parentPhones.length === 0) {
-      return res.status(400).json({ error: 'No phone numbers specified' });
+    if (targetNames.length === 0) {
+      return res.status(400).json({ error: 'No recipients specified' });
     }
 
-    // Check if Twilio credentials are configured
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
-      console.log('SMS would be sent to:', parentPhones);
+    // Check if Slack webhook is configured
+    if (!process.env.SLACK_WEBHOOK_URL) {
+      console.log('Slack message would be sent for:', targetNames);
       console.log('Message:', message);
       return res.json({ 
-        message: `SMS simulation: Would send to ${parentPhones.length} parent(s)`,
-        recipients: parentPhones.length,
-        note: 'Twilio credentials not configured - SMS not sent'
+        message: `Slack simulation: Would send regarding ${targetNames.length} parent(s)`,
+        recipients: targetNames.length,
+        note: 'SLACK_WEBHOOK_URL not configured - Message not sent to Slack'
       });
     }
 
-    // Send SMS using Twilio
-    const twilio = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    // Send message using Slack
+    const slackMessage = `*Notification for Parents (${targetNames.length} recipient(s)):*\n\n${message}`;
     
-    const sendPromises = parentPhones.map(async (phone: string) => {
-      try {
-        const result = await twilio.messages.create({
-          body: message,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: phone
-        });
-        console.log('SMS sent to:', phone, 'SID:', result.sid);
-        return { phone, success: true, sid: result.sid };
-      } catch (error) {
-        console.error('Failed to send SMS to:', phone, error);
-        return { phone, success: false, error: error.message };
-      }
+    await axios.post(process.env.SLACK_WEBHOOK_URL, {
+      text: slackMessage
     });
 
-    const results = await Promise.all(sendPromises);
-    const successful = results.filter(r => r.success).length;
-    const failed = results.filter(r => !r.success).length;
+    console.log('Slack message sent successfully.');
 
     res.json({ 
-      message: `SMS sent to ${successful} parent(s), ${failed} failed`,
-      recipients: parentPhones.length,
-      successful,
-      failed,
-      results
+      message: `Message sent to Slack successfully for ${targetNames.length} parent(s)`,
+      recipients: targetNames.length,
+      successful: targetNames.length,
+      failed: 0,
+      results: targetNames.map(name => ({ name, success: true }))
     });
   } catch (error) {
-    console.error('Send SMS error:', error);
-    res.status(500).json({ error: 'Failed to send SMS' });
+    console.error('Send Slack error:', error);
+    res.status(500).json({ error: 'Failed to send Slack message' });
   }
 });
 
